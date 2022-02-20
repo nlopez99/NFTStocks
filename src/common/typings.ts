@@ -1,6 +1,6 @@
-import { Router } from 'express';
+import { Router } from 'express'
 
 export interface CRUDController {
-  path: string;
-  router: Router;
+  path: string
+  router: Router
 }

@@ -7,7 +7,7 @@
     "start": "tsc -p . && node dist/server.js",
     "start:dev": "ts-node ./server.ts",
     "build": "tsc -p .",
-    "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "format": "prettier --config prettier.config.js 'src/**/*.ts' --write",
     "lint": "eslint .",
     "test": "jest --testEnvironment=node --runInBand ./tests"
   },
@@ -17,7 +17,7 @@
   "dependencies": {
     "dotenv": "^16.0.0",
     "express": "^4.17.2",
-    "mongoose": "^6.2.1",
+    "mongoose": "^6.2.2",
     "typescript": "^4.5.5"
   },
   "devDependencies": {
