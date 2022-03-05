@@ -14,4 +14,7 @@ export const config = {
     port: process.env.DB_PORT,
     databaseName: process.env.DB_NAME,
   },
+  scraper: {
+    discordToken: process.env.DISCORD_TOKEN,
+  },
 }
