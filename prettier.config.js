@@ -1,5 +1,1 @@
-module.exports = {
-  semi: false,
-  singleQuote: true,
-  trailingComma: "es5",
-};
+module.exports = require('@trident-core/prettier-config')
