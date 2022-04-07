@@ -1,5 +1,8 @@
 module.exports = {
-  extends: ['@trident-core/eslint-config/es6', '@trident-core/eslint-config/typescript'],
+  extends: [
+    '@trident-core/eslint-config/es6',
+    '@trident-core/eslint-config/typescript',
+  ],
   settings: {
     'import/external-module-folders': ['node_modules'],
   },
