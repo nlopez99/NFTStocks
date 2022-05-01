@@ -36,8 +36,8 @@ export class TokenService {
       id: await generateId(),
       firstName: user.firstName,
       lastName: user.lastName,
-      audience: this.configService.get<string>('jwt.AUDIENCE'),
-      subject: user.id,
+      aud: this.configService.get<string>('jwt.AUDIENCE'),
+      sub: user.id,
       roles: auth.roles,
       actions: auth.actions,
     }
@@ -46,8 +46,8 @@ export class TokenService {
   async createRefreshToken(userId: string): Promise<JWTRefreshToken> {
     return {
       id: await generateId(),
-      audience: this.configService.get<string>('jwt.AUDIENCE'),
-      subject: userId,
+      aud: this.configService.get<string>('jwt.AUDIENCE'),
+      sub: userId,
     }
   }
 
@@ -61,8 +61,10 @@ export class TokenService {
       expires: token.expires,
     }))
 
+    const [accessToken] = decodedTokens
+
     const auth = await this.authModel
-      .findOne({ userId: decodedTokens[0].sub })
+      .findOne({ userId: accessToken.sub })
       .exec()
 
     const newTokens = [...auth.activeTokens, ...tokenData]
@@ -100,22 +102,16 @@ export class TokenService {
 
   async signAccessToken(payload: JWTAccessToken): Promise<SignedAccessToken> {
     return {
-      accessToken: this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('jwt.ACCESS_SECRET'),
-        expiresIn: this.configService.get<string>('jwt.ACCESS_EXP'),
-      }),
+      accessToken: this.jwtService.sign(payload),
     }
   }
 
   async signRefreshToken(payload: {
     id: string
-    subject: string
+    sub: string
   }): Promise<SignedRefreshToken> {
     return {
-      refreshToken: this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('jwt.REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('jwt.REFRESH_EXP'),
-      }),
+      refreshToken: this.jwtService.sign(payload),
     }
   }
 }

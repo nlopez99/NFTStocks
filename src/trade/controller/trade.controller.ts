@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Patch, Body, Param } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common'
+
+import { JWTAuthGuard } from '@/auth/guards/jwtAuth.guard'
 
 import { NewTrade, Trade, UpdateTrade } from '../model/trade.model'
 import { TradeService } from '../service/trade.service'
@@ -17,7 +27,8 @@ export class TradeController {
     return await this.tradeService.findOne(id)
   }
 
-  @Get(':id')
+  @UseGuards(JWTAuthGuard)
+  @Get('user/:userId')
   async findByUser(@Param('userId') userId: string): Promise<Trade[]> {
     return await this.tradeService.findByUser(userId)
   }

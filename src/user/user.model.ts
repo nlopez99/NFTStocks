@@ -38,10 +38,26 @@ type SanitizedUser = Pick<
   | 'avatarUrl'
 >
 
-type NewUser = Omit<SanitizedUser, 'id' | 'authId'>
+type NewUser = Omit<SanitizedUser, 'id'>
+
+type LoginData = Pick<User, 'email' | 'password'>
+
+type AuthenticatedUser = SanitizedUser & {
+  accessToken: string
+  refreshToken: string
+}
 
 type UserUpdate = Partial<User>
 
 const UserModel = model<User>('User', UserSchema)
 
-export { UserSchema, UserModel, User, NewUser, UserUpdate, SanitizedUser }
+export {
+  UserSchema,
+  UserModel,
+  User,
+  NewUser,
+  UserUpdate,
+  SanitizedUser,
+  AuthenticatedUser,
+  LoginData,
+}

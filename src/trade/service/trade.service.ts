@@ -40,6 +40,7 @@ export class TradeService {
   }
 
   async findByUser(userId: string): Promise<Trade[]> {
+    this.logger.debug(`Finding trades by user: ${userId}`)
     return await this.tradeModel.find({ userId }).exec()
   }
 }

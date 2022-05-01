@@ -9,7 +9,7 @@ const AuthSchema = new Schema<Auth>(
     actions: [{ type: String, required: true }],
     activeTokens: [{ type: String, required: true }],
   },
-  { collection: 'auth' }
+  { collection: 'Auth' }
 )
 
 interface Auth extends Document {
@@ -35,7 +35,10 @@ interface SignedRefreshToken {
   refreshToken: string
 }
 
-type SanitizedAuth = Pick<Auth, 'id' | 'roles' | 'actions'>
+type SanitizedAuth = Pick<
+  Auth,
+  'id' | 'userId' | 'roles' | 'actions' | 'activeTokens'
+>
 
 interface NewAuth {
   password: string
@@ -46,16 +49,16 @@ interface JWTAccessToken {
   id: string
   firstName: string
   lastName: string
-  audience: string
-  subject: string
+  aud: string
+  sub: string
   roles: string[]
   actions: string[]
 }
 
 interface JWTRefreshToken {
   id: string
-  audience: string
-  subject: string
+  aud: string
+  sub: string
 }
 
 const AuthModel = model<Auth>('Auth', AuthSchema)
