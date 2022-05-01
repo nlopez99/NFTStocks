@@ -2,6 +2,7 @@ import { Schema, Document, model } from 'mongoose'
 
 const UserSchema = new Schema<User>(
   {
+    authId: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -17,6 +18,7 @@ const UserSchema = new Schema<User>(
 
 interface User extends Document {
   id: string
+  authId: string
   username: string
   password: string
   email: string
@@ -27,10 +29,16 @@ interface User extends Document {
 
 type SanitizedUser = Pick<
   User,
-  'id' | 'username' | 'email' | 'firstName' | 'lastName' | 'avatarUrl'
+  | 'id'
+  | 'authId'
+  | 'username'
+  | 'email'
+  | 'firstName'
+  | 'lastName'
+  | 'avatarUrl'
 >
 
-type NewUser = Omit<SanitizedUser, 'id'>
+type NewUser = Omit<SanitizedUser, 'id' | 'authId'>
 
 type UserUpdate = Partial<User>
 

@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { AuthModule } from './auth/auth.module'
 import { CollectionModule } from './collection/collection.module'
 import databaseConfig from './config/database.config'
 import openseaConfig from './config/opensea.config'
@@ -19,18 +20,14 @@ import { UserModule } from './user/user.module'
       load: [databaseConfig, openseaConfig],
     }),
     MongooseModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => {
-        console.log(
-          configService.get<string>('database.MONGO_CONNECTION_STRING')
-        )
-        return {
-          uri: configService
-            .get<string>('database.MONGO_CONNECTION_STRING')
-            .valueOf(),
-        }
-      },
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService
+          .get<string>('database.MONGO_CONNECTION_STRING')
+          .valueOf(),
+      }),
       inject: [ConfigService],
     }),
+    AuthModule,
     CollectionModule,
     UserModule,
     TradeModule,

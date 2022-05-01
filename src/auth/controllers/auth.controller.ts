@@ -42,13 +42,13 @@ export class AuthController {
 
     const result = await this.authService.login(email, password)
 
-    response.cookie('refresh_token', result.refresh_token, {
+    response.cookie('refreshToken', result.refreshToken, {
       path: '/',
       httpOnly: true,
       secure: true,
     })
 
-    delete result.refresh_token
+    delete result.refreshToken
 
     return result
   }

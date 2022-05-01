@@ -11,15 +11,14 @@ import {
   JWTAccessToken,
   JWTRefreshToken,
   SanitizedAuth,
+  SignedAccessToken,
+  SignedRefreshToken,
 } from '@/auth/models/auth.model'
 
 import { SanitizedUser } from '@/user/user.model'
 
 import { generateId } from '@/utils/common'
-
-const filterExpiredTokens = (tokens: ActiveToken[]): ActiveToken[] => {
-  return tokens.filter((token) => isTokenValid(token))
-}
+import { filterExpiredTokens } from '@/utils/token'
 
 @Injectable()
 export class TokenService {
@@ -37,7 +36,7 @@ export class TokenService {
       id: await generateId(),
       firstName: user.firstName,
       lastName: user.lastName,
-      audience: this.configService.get<string>('auth.JWT_ACCESS_AUDIENCE'),
+      audience: this.configService.get<string>('jwt.AUDIENCE'),
       subject: user.id,
       roles: auth.roles,
       actions: auth.actions,
@@ -47,19 +46,19 @@ export class TokenService {
   async createRefreshToken(userId: string): Promise<JWTRefreshToken> {
     return {
       id: await generateId(),
-      audience: this.configService.get<string>('auth.JWT_REFRESH_AUD'),
+      audience: this.configService.get<string>('jwt.AUDIENCE'),
       subject: userId,
     }
   }
 
-  async addValidTokens(tokens: string[]) {
+  async addValidTokens(tokens: string[]): Promise<void> {
     const decodedTokens = await Promise.all(
       tokens.map((token) => this.jwtService.decode(token))
     )
 
-    const tokenData = decodedTokens.map((tokenData: ActiveToken) => ({
-      id: tokenData.id,
-      exp: tokenData.exp,
+    const tokenData = decodedTokens.map((token: ActiveToken) => ({
+      id: token.id,
+      expires: token.expires,
     }))
 
     const auth = await this.authModel
@@ -68,18 +67,20 @@ export class TokenService {
 
     const newTokens = [...auth.activeTokens, ...tokenData]
 
-    await auth.updateOne({
-      $set: { activeTokens: filterExpiredTokens(newTokens) },
-    })
+    await auth
+      .updateOne({
+        activeTokens: filterExpiredTokens(newTokens),
+      })
+      .exec()
   }
 
-  async removeValidTokens(tokens: string[]) {
+  async removeValidTokens(tokens: string[]): Promise<void> {
     const decodedTokens = await Promise.all(
       tokens.map((token) => this.jwtService.decode(token))
     )
 
     const tokenIds = decodedTokens
-      .filter((token) => token !== null)
+      .filter((token) => !!token)
       .map((tokenData: ActiveToken) => tokenData.id)
 
     const auth = await this.authModel
@@ -90,25 +91,30 @@ export class TokenService {
       (token: ActiveToken) => !tokenIds.includes(token.id)
     )
 
-    await auth.updateOne({
-      $set: { activeTokens: filterExpiredTokens(newTokens) },
-    })
+    await auth
+      .updateOne({
+        activeTokens: filterExpiredTokens(newTokens),
+      })
+      .exec()
   }
 
-  async signAccessToken(payload: JwtAccessToken) {
+  async signAccessToken(payload: JWTAccessToken): Promise<SignedAccessToken> {
     return {
-      access_token: this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('auth.JWT_ACCESS_SECRET'),
-        expiresIn: this.configService.get<string>('auth.JWT_ACCESS_EXP'),
+      accessToken: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('jwt.ACCESS_SECRET'),
+        expiresIn: this.configService.get<string>('jwt.ACCESS_EXP'),
       }),
     }
   }
 
-  async signRefreshToken(payload: { id: string; sub: string }) {
+  async signRefreshToken(payload: {
+    id: string
+    subject: string
+  }): Promise<SignedRefreshToken> {
     return {
-      refresh_token: this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('auth.JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('auth.JWT_REFRESH_EXP'),
+      refreshToken: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('jwt.REFRESH_SECRET'),
+        expiresIn: this.configService.get<string>('jwt.REFRESH_EXP'),
       }),
     }
   }

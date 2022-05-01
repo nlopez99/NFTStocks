@@ -27,7 +27,7 @@ export class UserController {
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<SanitizedUser> {
-    return await this.userService.findOne(id)
+    return await this.userService.findOne({ id })
   }
 
   @Patch(':id')

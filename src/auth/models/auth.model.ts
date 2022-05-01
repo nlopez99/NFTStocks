@@ -27,10 +27,15 @@ interface ActiveToken {
   expires: number
 }
 
-type SanitizedAuth = Omit<
-  Auth,
-  'hash' | 'salt' | 'userId' | 'id' | 'activeTokens'
->
+interface SignedAccessToken {
+  accessToken: string
+}
+
+interface SignedRefreshToken {
+  refreshToken: string
+}
+
+type SanitizedAuth = Pick<Auth, 'id' | 'roles' | 'actions'>
 
 interface NewAuth {
   password: string
@@ -64,4 +69,6 @@ export {
   JWTRefreshToken,
   SanitizedAuth,
   ActiveToken,
+  SignedAccessToken,
+  SignedRefreshToken,
 }
