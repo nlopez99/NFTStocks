@@ -28,7 +28,7 @@ export class AuthService {
     if (!user)
       throw new HttpException(`Cannot find user ${email}`, HttpStatus.NOT_FOUND)
 
-    const { authId } = user
+    const { authId, id: userId } = user
 
     const auth = await this.authModel.findOne({ authId }).exec()
 
@@ -44,23 +44,20 @@ export class AuthService {
 
     if (!match) throw new HttpException(`Unauthorized`, HttpStatus.UNAUTHORIZED)
 
-    const accessToken = await this.tokenService.signAccessToken(
+    const { accessToken } = await this.tokenService.signAccessToken(
       await this.tokenService.createAccessToken(user, auth)
     )
 
-    const refreshToken = await this.tokenService.signRefreshToken(
-      await this.tokenService.createRefreshToken(user.id)
+    const { refreshToken } = await this.tokenService.signRefreshToken(
+      await this.tokenService.createRefreshToken(userId)
     )
 
-    await this.tokenService.addValidTokens([
-      accessToken.accessToken,
-      refreshToken.refreshToken,
-    ])
+    await this.tokenService.addValidTokens([accessToken, refreshToken])
 
     return {
       ...sanitizeUser(user),
-      ...accessToken,
-      ...refreshToken,
+      accessToken,
+      refreshToken,
     }
   }
 }
