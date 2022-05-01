@@ -2,8 +2,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { sanitizeUser } from '@/utils/user'
-
 import { User, NewUser, SanitizedUser, UserUpdate } from './user.model'
 
 @Injectable()
@@ -17,11 +15,7 @@ export class UserService {
 
   async create(newUser: NewUser): Promise<SanitizedUser> {
     const user = new this.userModel(newUser)
-    const createdUser = await user.save()
-
-    this.logger.debug(`Created User: ${createdUser.id}`)
-
-    return createdUser
+    return await user.save()
   }
 
   async find(
@@ -35,13 +29,11 @@ export class UserService {
   }
 
   async findById(id: string): Promise<SanitizedUser> {
-    const user = await this.userModel.findOne({ _id: id }).exec()
-    return sanitizeUser(user)
+    return await this.userModel.findOne({ _id: id }).exec()
   }
 
   async findByAuthId(authId: string): Promise<SanitizedUser> {
-    const user = await this.userModel.findOne({ authId }).exec()
-    return sanitizeUser(user)
+    return await this.userModel.findOne({ authId }).exec()
   }
 
   async update(id: string, updateUser: UserUpdate): Promise<SanitizedUser> {

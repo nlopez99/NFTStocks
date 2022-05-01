@@ -1,19 +1,23 @@
 import { Schema, Document, model } from 'mongoose'
 
+const activeTokenSchema = {
+  id: { type: String, required: true },
+  exp: { type: Number, required: true },
+}
+
 const AuthSchema = new Schema<Auth>(
   {
-    userId: { type: String, required: true },
+    userId: { type: String, required: false },
     hash: { type: Buffer, required: true },
     salt: { type: Buffer, required: true },
     roles: [{ type: String, required: true }],
     actions: [{ type: String, required: true }],
-    activeTokens: [{ type: String, required: true }],
+    activeTokens: [activeTokenSchema],
   },
   { collection: 'Auth' }
 )
 
 interface Auth extends Document {
-  id: string
   userId: string
   hash: Buffer
   salt: Buffer
@@ -24,7 +28,7 @@ interface Auth extends Document {
 
 interface ActiveToken {
   id: string
-  expires: number
+  exp: number
 }
 
 interface SignedAccessToken {
@@ -35,10 +39,7 @@ interface SignedRefreshToken {
   refreshToken: string
 }
 
-type SanitizedAuth = Pick<
-  Auth,
-  'id' | 'userId' | 'roles' | 'actions' | 'activeTokens'
->
+type SanitizedAuth = Omit<Auth, 'hash' | 'salt'>
 
 interface NewAuth {
   password: string

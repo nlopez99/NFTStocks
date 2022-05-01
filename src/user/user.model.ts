@@ -4,7 +4,6 @@ const UserSchema = new Schema<User>(
   {
     authId: { type: String, required: true },
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -20,7 +19,6 @@ interface User extends Document {
   id: string
   authId: string
   username: string
-  password: string
   email: string
   firstName: string
   lastName: string
@@ -38,9 +36,15 @@ type SanitizedUser = Pick<
   | 'avatarUrl'
 >
 
-type NewUser = Omit<SanitizedUser, 'id'>
+type NewUser = Pick<
+  User,
+  'authId' | 'username' | 'email' | 'firstName' | 'lastName' | 'avatarUrl'
+>
 
-type LoginData = Pick<User, 'email' | 'password'>
+interface LoginData {
+  email: string
+  password: string
+}
 
 type AuthenticatedUser = SanitizedUser & {
   accessToken: string

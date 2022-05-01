@@ -10,7 +10,7 @@ import { AuthSchema } from './models/auth.model'
 import { AuthService } from './services/auth.service'
 import { PasswordService } from './services/password.service'
 import { TokenService } from './services/token.service'
-import { JwtStrategy } from './strategies/jwt.strategy'
+import { JWTStrategy } from './strategies/jwt.strategy'
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, PasswordService, TokenService],
+  providers: [AuthService, JWTStrategy, PasswordService, TokenService],
   exports: [AuthService],
 })
 export class AuthModule {}

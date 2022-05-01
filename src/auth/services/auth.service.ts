@@ -5,7 +5,7 @@ import { Model } from 'mongoose'
 import { Auth, NewAuth, SanitizedAuth } from '@/auth/models/auth.model'
 import { AuthenticatedUser, NewUser } from '@/user/user.model'
 import { UserService } from '@/user/user.service'
-import { sanitizeUser } from '@/utils/user'
+import { formatUser } from '@/utils/user'
 
 import { PasswordService } from './password.service'
 import { TokenService } from './token.service'
@@ -22,16 +22,12 @@ export class AuthService {
   async createUserAuth(password: string): Promise<SanitizedAuth> {
     const createdPassword = await this.passwordService.hashPassword(password)
     const newAuth = new this.authModel(createdPassword)
-    const userAuth = await newAuth.save()
-    const { salt, hash, ...sanitizedUserAuth } = userAuth
-    // TODO: refactor this type assertion
-    return sanitizedUserAuth as unknown as SanitizedAuth
+    return await newAuth.save()
   }
 
   async connectUserToAuth(userId: string, authId: string): Promise<void> {
     const auth = await this.authModel.findOne({ _id: authId }).exec()
-    auth.userId = userId
-    await auth.save()
+    await auth.updateOne({ userId }).exec()
   }
 
   async login(email: string, password: string): Promise<AuthenticatedUser> {
@@ -67,7 +63,7 @@ export class AuthService {
     await this.tokenService.addValidTokens([accessToken, refreshToken])
 
     return {
-      ...sanitizeUser(user),
+      ...formatUser(user),
       accessToken,
       refreshToken,
     }
@@ -76,27 +72,35 @@ export class AuthService {
   async register(newUser: NewUser & NewAuth): Promise<AuthenticatedUser> {
     const { password, ...user } = newUser
 
+    const existingUser = await this.userService.findOne({ email: user.email })
+
+    if (existingUser)
+      throw new HttpException(
+        `User ${user.email} already exists`,
+        HttpStatus.CONFLICT
+      )
+
     const sanitizedAuth = await this.createUserAuth(password)
 
-    const sanitizedNewUser = await this.userService.create({
+    const createdUser = await this.userService.create({
       ...user,
       authId: sanitizedAuth.id,
     })
 
-    await this.connectUserToAuth(sanitizedNewUser.id, sanitizedAuth.id)
+    await this.connectUserToAuth(createdUser.id, sanitizedAuth.id)
 
     const { accessToken } = await this.tokenService.signAccessToken(
-      await this.tokenService.createAccessToken(sanitizedNewUser, sanitizedAuth)
+      await this.tokenService.createAccessToken(createdUser, sanitizedAuth)
     )
 
     const { refreshToken } = await this.tokenService.signRefreshToken(
-      await this.tokenService.createRefreshToken(sanitizedNewUser.id)
+      await this.tokenService.createRefreshToken(createdUser.id)
     )
 
     await this.tokenService.addValidTokens([accessToken, refreshToken])
 
     return {
-      ...sanitizedNewUser,
+      ...formatUser(createdUser),
       accessToken,
       refreshToken,
     }

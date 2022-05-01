@@ -58,7 +58,7 @@ export class TokenService {
 
     const tokenData = decodedTokens.map((token: ActiveToken) => ({
       id: token.id,
-      expires: token.expires,
+      exp: token.exp,
     }))
 
     const [accessToken] = decodedTokens
@@ -71,7 +71,7 @@ export class TokenService {
 
     await auth
       .updateOne({
-        activeTokens: filterExpiredTokens(newTokens),
+        $set: { activeTokens: filterExpiredTokens(newTokens) },
       })
       .exec()
   }
@@ -85,8 +85,10 @@ export class TokenService {
       .filter((token) => !!token)
       .map((tokenData: ActiveToken) => tokenData.id)
 
+    const [accessToken] = decodedTokens
+
     const auth = await this.authModel
-      .findOne({ userId: decodedTokens[0].sub })
+      .findOne({ userId: accessToken.sub })
       .exec()
 
     const newTokens = auth.activeTokens.filter(
@@ -102,7 +104,10 @@ export class TokenService {
 
   async signAccessToken(payload: JWTAccessToken): Promise<SignedAccessToken> {
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('jwt.SECRET'),
+        expiresIn: this.configService.get<string>('jwt.ACCESS_EXP'),
+      }),
     }
   }
 
@@ -111,7 +116,10 @@ export class TokenService {
     sub: string
   }): Promise<SignedRefreshToken> {
     return {
-      refreshToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('jwt.SECRET'),
+        expiresIn: this.configService.get<string>('jwt.REFRESH_EXP'),
+      }),
     }
   }
 }

@@ -1,3 +1,3 @@
-import sanitizeUser from './sanitizeUser'
+import formatUser from './formatUser'
 
-export { sanitizeUser }
+export { formatUser }
