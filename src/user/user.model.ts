@@ -16,6 +16,7 @@ const UserSchema = new Schema<User>(
 )
 
 interface User extends Document {
+  id: string
   username: string
   password: string
   email: string
@@ -24,15 +25,12 @@ interface User extends Document {
   avatarUrl?: string
 }
 
-interface SanitizedUser {
-  username: string
-  email: string
-  firstName: string
-  lastName: string
-  avatarUrl?: string
-}
+type SanitizedUser = Pick<
+  User,
+  'id' | 'username' | 'email' | 'firstName' | 'lastName' | 'avatarUrl'
+>
 
-type NewUser = Omit<SanitizedUser, '_id'>
+type NewUser = Omit<SanitizedUser, 'id'>
 
 type UserUpdate = Partial<User>
 

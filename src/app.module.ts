@@ -19,9 +19,16 @@ import { UserModule } from './user/user.module'
       load: [databaseConfig, openseaConfig],
     }),
     MongooseModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('database.MONGO_CONNECTION_STRING'),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        console.log(
+          configService.get<string>('database.MONGO_CONNECTION_STRING')
+        )
+        return {
+          uri: configService
+            .get<string>('database.MONGO_CONNECTION_STRING')
+            .valueOf(),
+        }
+      },
       inject: [ConfigService],
     }),
     CollectionModule,

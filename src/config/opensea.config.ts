@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config'
 
-const openseaConfig = registerAs('database', () => ({
+const openseaConfig = registerAs('opensea', () => ({
   API_KEY: process.env.OPENSEA_TOKEN,
 }))
 

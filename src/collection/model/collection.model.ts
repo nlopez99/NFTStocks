@@ -31,7 +31,7 @@ const CollectionSchema = new Schema<Collection>(
     },
 
     /* Contracts tied to collection */
-    assetContracts: assetContracts,
+    assetContracts,
 
     /* Collection Traits */
     traits,
@@ -60,6 +60,14 @@ interface Collection extends Document {
 
 type NewCollection = Omit<Collection, '_id'>
 
+type UpdateCollection = Partial<Collection>
+
 const CollectionModel = model<Collection>('Collection', CollectionSchema)
 
-export { CollectionSchema, CollectionModel, Collection, NewCollection }
+export {
+  Collection,
+  CollectionSchema,
+  CollectionModel,
+  NewCollection,
+  UpdateCollection,
+}
